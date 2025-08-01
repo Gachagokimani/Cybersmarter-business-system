@@ -406,7 +406,7 @@ export default function SalesPage() {
         <div className="mb-4">
           <h2 className="text-xl font-semibold">Record New Sale/Service</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Services (like Software Installation, KRA iTax) don't affect inventory. Physical items will be deducted from inventory when sold.
+            Services (like Software Installation, KRA iTax) don&apos;t affect inventory. Physical items will be deducted from inventory when sold.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

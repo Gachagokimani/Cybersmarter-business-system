@@ -92,7 +92,7 @@ export default function InventoryPage() {
       });
 
       setEditingItem(null);
-      setEditForm({ name: "", quantity: 1, category: "Electronics", unitPrice: 0, buyingPrice: 0 });
+      setEditForm({ name: "", quantity: 1, category: "Electronics", unitPrice: 0, buyingPrice: 0, status: "IN_STOCK" });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update item');
     }
@@ -112,7 +112,7 @@ export default function InventoryPage() {
 
   const cancelEdit = () => {
     setEditingItem(null);
-    setEditForm({ name: "", quantity: 1, category: "Electronics", unitPrice: 0, buyingPrice: 0 });
+    setEditForm({ name: "", quantity: 1, category: "Electronics", unitPrice: 0, buyingPrice: 0, status: "IN_STOCK" });
   };
 
   const deleteItem = async (id: number) => {
@@ -296,8 +296,8 @@ export default function InventoryPage() {
       <div className="bg-white rounded shadow p-4 mb-4">
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Add New Item</h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Note: Services (like Software Installation, KRA iTax, etc.) are managed in the Sales page and don't appear in inventory. Only physical items are tracked here.
+                      <p className="text-sm text-gray-600 mt-1">
+            Note: Services (like Software Installation, KRA iTax, etc.) are managed in the Sales page and don&apos;t appear in inventory. Only physical items are tracked here.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -364,9 +364,9 @@ export default function InventoryPage() {
         <button
           className="mt-4 bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 disabled:opacity-70"
           onClick={addItem}
-          disabled={addItemMutation.isLoading || !item.name || item.unitPrice <= 0}
+          disabled={addItemMutation.isPending || !item.name || item.unitPrice <= 0}
         >
-          {addItemMutation.isLoading ? (
+          {addItemMutation.isPending ? (
             <>
               <Spinner /> Adding...
             </>
@@ -525,9 +525,9 @@ export default function InventoryPage() {
               <button
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-70"
                 onClick={updateItem}
-                disabled={updateItemMutation.isLoading || !editForm.name || editForm.unitPrice <= 0}
+                disabled={updateItemMutation.isPending || !editForm.name || editForm.unitPrice <= 0}
               >
-                {updateItemMutation.isLoading ? (
+                {updateItemMutation.isPending ? (
                   <>
                     <Spinner /> Updating...
                   </>
