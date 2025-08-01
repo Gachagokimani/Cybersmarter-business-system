@@ -6,14 +6,7 @@ import Spinner from "../components/Spinner";
 import { useSales, useAddSale, useUpdateSale, useDeleteSale } from "../hooks/useSales";
 import { useInventory } from "../hooks/useInventory";
 import { useRevenue } from "../hooks/useRevenue";
-
-interface Sale {
-  id: number;
-  item: string;
-  price: number;
-  quantity: number;
-  date: string;
-}
+import type { Sale } from "../types/sales";
 
 interface InventoryItem {
   id: number;

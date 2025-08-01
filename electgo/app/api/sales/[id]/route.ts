@@ -5,33 +5,53 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check if record exists first
-    const exists = await prisma.transaction.count({
-      where: { id: parseInt(params.id) }
-    });
-
-    if (!exists) {
+    // Await the params promise
+    const { id: idParam } = await params;
+    
+    // Validate ID parameter
+    const id = parseInt(idParam);
+    if (isNaN(id)) {
       return NextResponse.json(
-        { warning: "Record already removed" }, // Different from error
-        { status: 200 } // Still success status
+        { error: "Invalid ID parameter" },
+        { status: 400 }
       );
     }
 
-    // Proceed with normal deletion
-    await prisma.transaction.delete({
-      where: { id: parseInt(params.id) }
+    // Check if record exists first
+    const sale = await prisma.transaction.findUnique({
+      where: { id },
+      include: { product: true }
     });
 
-    return NextResponse.json({ message: "Sale deleted" });
+    if (!sale) {
+      return NextResponse.json(
+        { error: "Sale not found" },
+        { status: 404 }
+      );
+    }
+
+    // Auto-delete if invalid
+    if (sale.quantity <= 0 || !sale.product) {
+      await prisma.transaction.delete({ where: { id } });
+      return NextResponse.json({ 
+        message: "Invalid sale auto-deleted" 
+      });
+    }
+
+    // Normal deletion for valid records
+    await prisma.transaction.delete({ where: { id } });
+    return NextResponse.json({ message: "Sale deleted successfully" });
 
   } catch (error) {
     console.error('Delete error:', error);
     return NextResponse.json(
-      { error: "Failed to delete valid record" },
+      { error: "Failed to delete sale" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

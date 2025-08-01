@@ -1,23 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-interface Sale {
-  id: number;
-  item: string;
-  price: number;
-  quantity: number;
-  date: string;
-}
-
-interface NewSale {
-  item: string;
-  price: number;
-  quantity: number;
-  date: string;
-}
-
-interface UpdateSale extends NewSale {
-  id: number;
-}
+import type { Sale, NewSale, UpdateSale, SalesResponse, ApiError } from '../types/sales';
 
 // Fetch sales
 export const useSales = () => {
@@ -118,7 +100,8 @@ export const useDeleteSale = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to delete sale');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete sale');
       }
     },
     onSuccess: () => {

@@ -336,48 +336,4 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json(
-        { error: "ID parameter is required" },
-        { status: 400 }
-      );
-    }
-    
-    // First check if record exists and is invalid
-    const sale = await prisma.transaction.findUnique({
-      where: { id: parseInt(id) },
-      include: { product: true }
-    });
-
-    if (!sale) {
-      return NextResponse.json(
-        { error: "Sale not found" },
-        { status: 404 }
-      );
-    }
-
-    // Auto-delete if invalid
-    if (sale.quantity <= 0 || !sale.product) {
-      await prisma.transaction.delete({ where: { id: parseInt(id) } });
-      return NextResponse.json({ 
-        message: "Invalid sale auto-deleted" 
-      });
-    }
-
-    // Normal deletion for valid records
-    await prisma.transaction.delete({ where: { id: parseInt(id) } });
-    return NextResponse.json({ message: "Sale deleted successfully" });
-
-  } catch (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json(
-      { error: "Deletion failed" },
-      { status: 500 }
-    );
-  }
-} 
+// DELETE method removed - handled by [id]/route.ts 
