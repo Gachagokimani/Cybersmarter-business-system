@@ -87,6 +87,9 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -164,6 +167,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -232,17 +240,18 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
-        "fromEnvVar": null,
-        "value": "file:./dev.db"
+        "fromEnvVar": "DATABASE_URL",
+        "value": null
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../app/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = \"file:./dev.db\" // Relative to prisma/ directory\n}\n\nmodel Product {\n  id           Int           @id @default(autoincrement())\n  name         String\n  category     String\n  quantity     Int           @default(0)\n  unitPrice    Float\n  buyingPrice  Float? // Cost price for profit calculation\n  status       ProductStatus @default(IN_STOCK)\n  createdAt    DateTime      @default(now())\n  updatedAt    DateTime      @updatedAt\n  transactions Transaction[]\n}\n\nenum ProductStatus {\n  IN_STOCK\n  OUT_OF_STOCK\n}\n\nmodel Location {\n  id      Int     @id @default(autoincrement())\n  name    String\n  address String?\n  assets  Asset[]\n}\n\nmodel Asset {\n  id         Int         @id @default(autoincrement())\n  assetTag   String      @unique\n  type       String\n  status     AssetStatus @default(ACTIVE)\n  locationId Int?\n  location   Location?   @relation(fields: [locationId], references: [id])\n  assignedTo String? // Just store user email or name for now\n  createdAt  DateTime    @default(now())\n}\n\nenum AssetStatus {\n  ACTIVE\n  INACTIVE\n  RETIRED\n}\n\nmodel Transaction {\n  id           Int             @id @default(autoincrement())\n  productId    Int\n  product      Product         @relation(fields: [productId], references: [id])\n  quantity     Int\n  chargedPrice Float? // Actual price charged (including discounts)\n  type         TransactionType\n  timestamp    DateTime        @default(now())\n}\n\nenum TransactionType {\n  PURCHASE\n  SALE\n  TRANSFER\n}\n\nmodel InventoryItem {\n  id        Int      @id @default(autoincrement())\n  name      String\n  quantity  Int\n  category  String\n  unitPrice Float\n  status    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Sale {\n  id        Int      @id @default(autoincrement())\n  item      String\n  price     Float\n  quantity  Int\n  date      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Expense {\n  id        Int      @id @default(autoincrement())\n  item      String\n  amount    Float\n  quantity  Int      @default(1)\n  date      String\n  category  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "a1c08df420031b7949b1147723d3ddb59d090811e039d49a00c5c663f52be8a6",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../app/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id           Int           @id @default(autoincrement())\n  name         String\n  category     String\n  quantity     Int           @default(0)\n  unitPrice    Float\n  buyingPrice  Float? // Cost price for profit calculation\n  status       ProductStatus @default(IN_STOCK)\n  createdAt    DateTime      @default(now())\n  updatedAt    DateTime      @updatedAt\n  transactions Transaction[]\n}\n\nenum ProductStatus {\n  IN_STOCK\n  OUT_OF_STOCK\n}\n\nmodel Location {\n  id      Int     @id @default(autoincrement())\n  name    String\n  address String?\n  assets  Asset[]\n}\n\nmodel Asset {\n  id         Int         @id @default(autoincrement())\n  assetTag   String      @unique\n  type       String\n  status     AssetStatus @default(ACTIVE)\n  locationId Int?\n  location   Location?   @relation(fields: [locationId], references: [id])\n  assignedTo String? // Just store user email or name for now\n  createdAt  DateTime    @default(now())\n}\n\nenum AssetStatus {\n  ACTIVE\n  INACTIVE\n  RETIRED\n}\n\nmodel Transaction {\n  id           Int             @id @default(autoincrement())\n  productId    Int\n  product      Product         @relation(fields: [productId], references: [id])\n  quantity     Int\n  chargedPrice Float? // Actual price charged (including discounts)\n  type         TransactionType\n  timestamp    DateTime        @default(now())\n}\n\nenum TransactionType {\n  PURCHASE\n  SALE\n  TRANSFER\n}\n\nmodel InventoryItem {\n  id        Int      @id @default(autoincrement())\n  name      String\n  quantity  Int\n  category  String\n  unitPrice Float\n  status    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Sale {\n  id        Int      @id @default(autoincrement())\n  item      String\n  price     Float\n  quantity  Int\n  date      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Expense {\n  id        Int      @id @default(autoincrement())\n  item      String\n  amount    Float\n  quantity  Int      @default(1)\n  date      String\n  category  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "accf10a0d5222acb9bd0826a999fe51bb29e1c8d111541b60d7cc21e0719675c",
   "copyEngine": true
 }
 

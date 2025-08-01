@@ -336,12 +336,17 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
-    const id = params.id; // Get ID from route params
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID parameter is required" },
+        { status: 400 }
+      );
+    }
     
     // First check if record exists and is invalid
     const sale = await prisma.transaction.findUnique({
