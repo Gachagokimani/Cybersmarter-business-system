@@ -1,10 +1,6 @@
 {
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
+  "outputDirectory": ".next"
 } 
