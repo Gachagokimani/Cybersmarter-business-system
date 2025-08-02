@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "echo 'Starting build...' && prisma generate && echo 'Prisma generated' && next build && echo 'Build complete'",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

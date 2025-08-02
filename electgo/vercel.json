@@ -1,9 +1,6 @@
 {
-  "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --yes",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "projectSettings": {
-    "rootDirectory": "electgo"
-  }
+  "outputDirectory": ".next"
 } 

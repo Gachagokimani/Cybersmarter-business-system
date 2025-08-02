@@ -4,9 +4,9 @@
   "description": "",
   "private": true,
   "scripts": {
-    "dev": "cd electgo && pnpm dev",
-    "build": "cd electgo && pnpm build",
-    "start": "cd electgo && pnpm start"
+    "dev": "pnpm --filter electgo dev",
+    "build": "pnpm --filter electgo build",
+    "start": "pnpm --filter electgo start"
   },
   "dependencies": {
     "next": "15.4.4"
