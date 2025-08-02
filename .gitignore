@@ -184,8 +184,5 @@ app/generated/
 ehthumbs.db
 Thumbs.db
 
-# Ignore all public directories
-public/
-
 # Except this specific one
 !electgo/public/
