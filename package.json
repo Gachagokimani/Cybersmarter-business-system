@@ -8,6 +8,9 @@
     "build": "cd electgo && pnpm build",
     "start": "cd electgo && pnpm start"
   },
+  "dependencies": {
+    "next": "15.4.4"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
