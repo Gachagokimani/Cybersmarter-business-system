@@ -25,7 +25,12 @@ module.exports = {
           'medium': '#4a90e2',
           'dark': '#2c5aa0',
           'darker': '#1e3a8a',
-        }
+        },
+        seablue: '#2b6cb0', // Your seablue color
+      },
+      fontWeight: {
+        medium: '500',
+        semibold: '600',
       }
     },
   },
