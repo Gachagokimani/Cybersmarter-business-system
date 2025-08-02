@@ -1,4 +1,5 @@
 {
-  "installCommand": "pnpm install --yes",
+  "buildCommand": "echo 'Starting build...' && prisma generate && echo 'Prisma generated' && next build && echo 'Build complete'",
+  "installCommand": "pnpm install --force",
   "framework": "nextjs"
 } 
