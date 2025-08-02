@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
+  category    String
+  quantity    Int           @default(0)
+  unitPrice   Float
+  buyingPrice Float?        // Cost price for profit calculation
+  status      ProductStatus @default(IN_STOCK)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+enum ProductStatus {
+  IN_STOCK
+  OUT_OF_STOCK
+}
+
+model Location {
+  id       Int     @id @default(autoincrement())
+  name     String
+  address  String?
+  assets   Asset[]
+}
+
+model Asset {
+  id         Int         @id @default(autoincrement())
+  assetTag   String      @unique
+  type       String
+  status     AssetStatus @default(ACTIVE)
+  locationId Int?
+  location   Location?   @relation(fields: [locationId], references: [id])
+  assignedTo String?     // Just store user email or name for now
+  createdAt  DateTime    @default(now())
+}
+
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  RETIRED
+}
+
+model Transaction {
+  id           Int              @id @default(autoincrement())
+  productId    Int
+  product      Product          @relation(fields: [productId], references: [id])
+  quantity     Int
+  chargedPrice Float?           // Actual price charged (including discounts)
+  type         TransactionType
+  timestamp    DateTime         @default(now())
+}
+
+enum TransactionType {
+  PURCHASE
+  SALE
+  TRANSFER
+}
+
+model InventoryItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  quantity  Int
+  category  String
+  unitPrice Float
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id       Int      @id @default(autoincrement())
+  item     String
+  price    Float
+  quantity Int
+  date     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement())
+  item      String
+  amount    Float
+  quantity  Int      @default(1)
+  date      String
+  category  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,22 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-types": "off",
+    "prefer-const": "warn",
+    "no-var": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/generated/**/*", "**/*.d.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-types": "off",
+        "prefer-const": "off",
+        "no-var": "off",
+        "react-hooks/rules-of-hooks": "off",
+        "react-hooks/exhaustive-deps": "off"
+      }
+    }
+  ]
+} 
