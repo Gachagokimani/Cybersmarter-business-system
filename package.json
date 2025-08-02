@@ -2,17 +2,11 @@
   "name": "inv",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "dev": "cd electgo && next dev --turbopack",
-    "build": "cd electgo && next build",
-    "start": "cd electgo && next start"
-  },
-  "dependencies": {
-    "inv": "link:",
-    "next": "15.4.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "dev": "cd electgo && pnpm dev",
+    "build": "cd electgo && pnpm build",
+    "start": "cd electgo && pnpm start"
   },
   "keywords": [],
   "author": "",
