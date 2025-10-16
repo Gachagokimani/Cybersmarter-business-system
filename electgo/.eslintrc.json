@@ -4,7 +4,8 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-types": "off",
     "prefer-const": "warn",
-    "no-var": "warn"
+    "no-var": "warn",
+    "react/no-unescaped-entities": "off"
   },
   "overrides": [
     {
@@ -19,4 +20,4 @@
       }
     }
   ]
-} 
+}

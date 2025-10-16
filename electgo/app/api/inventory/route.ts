@@ -175,7 +175,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    let updatePayload: any = { ...updateData };
+    const updatePayload: any = { ...updateData };
     if (updatePayload.unitPrice !== undefined) updatePayload.unitPrice = parseFloat(updatePayload.unitPrice);
     if (updatePayload.buyingPrice !== undefined) updatePayload.buyingPrice = parseFloat(updatePayload.buyingPrice);
     if (updatePayload.quantity !== undefined) updatePayload.quantity = parseInt(updatePayload.quantity);

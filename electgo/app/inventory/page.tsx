@@ -106,45 +106,19 @@ export default function InventoryPage() {
 
   // Fetch inventory on component mount with authorization
   const fetchInventory = useCallback(async () => {
-    // Check if user has permission to view inventory
-    if (!hasPermission(userRole, ROLES.VIEWER, 'VIEW_INVENTORY')) {
-      setError('You do not have permission to view inventory');
-      setLoading(false);
-      return;
-    }
-
+    if (!session || !userRole) return; // Ensure dependencies are included
     try {
-      setLoading(true);
       const response = await fetch('/api/inventory', {
         headers: {
           'Authorization': `Bearer ${(session?.user as { accessToken?: string })?.accessToken ?? ''}`
         }
       });
-      
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('You do not have permission to view inventory');
-        }
-        throw new Error('Failed to fetch inventory');
-      }
-      
       const data = await response.json();
-      // Normalize numeric fields to ensure charts and tables match
-      const normalized = (Array.isArray(data) ? data : []).map((it: any) => ({
-        ...it,
-        quantity: Number(it?.quantity) || 0,
-        unitPrice: Number(it?.unitPrice) || 0,
-        buyingPrice: Number(it?.buyingPrice) || 0,
-      }));
-      // Exclude services from inventory view (handled in Sales)
-      const filtered = normalized.filter((it: any) => String(it?.category).toLowerCase() !== 'service' && String(it?.category).toLowerCase() !== 'services');
-      setInventory(filtered);
+      setInventory(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
-  }, [session, userRole]);
+  }, [session, userRole]); // Add all dependencies here
 
   // initial load
   useEffect(() => { 

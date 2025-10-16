@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { sendMail } from "@/app/lib/sendMail";
 
 export async function POST(req: NextRequest) {
-  let { name, workId, password, supervisorId, email, role } = await req.json();
+  const { name, workId, password, supervisorId, email, role } = await req.json();
 
   // Only allow 'STAFF' or 'SUPERVISOR' roles from registration
   if (role !== 'STAFF' && role !== 'SUPERVISOR') {
