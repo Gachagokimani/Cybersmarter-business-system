@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaHome, FaPrint, FaWifi, FaFileAlt, FaLaptop, FaClock } from "react-icons/fa";
 
+import RequireAuth from "../components/RequireAuth";
+
 export default function CyberCafePage() {
   // Cafe services with icons
   const cafeServices = [
@@ -63,7 +65,8 @@ export default function CyberCafePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 p-4 md:p-8">
+    <RequireAuth allowedRoles={["ADMIN","MANAGER","STAFF","SUPERVISOR"]}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header with Home button */}
         <header className="flex justify-between items-center mb-8">
@@ -160,5 +163,6 @@ export default function CyberCafePage() {
         </div>
       </div>
     </div>
+    </RequireAuth>
   );
 }

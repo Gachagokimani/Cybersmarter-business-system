@@ -108,7 +108,7 @@ export const TransactionType: typeof $Enums.TransactionType
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -344,8 +344,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.13.0
-   * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+   * Prisma Client JS version: 6.12.0
+   * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
    */
   export type PrismaVersion = {
     client: string
@@ -1316,24 +1316,16 @@ export namespace Prisma {
     /**
      * @example
      * ```
-     * // Shorthand for `emit: 'stdout'`
+     * // Defaults to stdout
      * log: ['query', 'info', 'warn', 'error']
      * 
-     * // Emit as events only
+     * // Emit as events
      * log: [
-     *   { emit: 'event', level: 'query' },
-     *   { emit: 'event', level: 'info' },
-     *   { emit: 'event', level: 'warn' }
-     *   { emit: 'event', level: 'error' }
+     *   { emit: 'stdout', level: 'query' },
+     *   { emit: 'stdout', level: 'info' },
+     *   { emit: 'stdout', level: 'warn' }
+     *   { emit: 'stdout', level: 'error' }
      * ]
-     * 
-     * / Emit as events and log to stdout
-     * og: [
-     *  { emit: 'stdout', level: 'query' },
-     *  { emit: 'stdout', level: 'info' },
-     *  { emit: 'stdout', level: 'warn' }
-     *  { emit: 'stdout', level: 'error' }
-     * 
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
@@ -1381,15 +1373,10 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
-
-  export type GetLogType<T> = CheckIsLogLevel<
-    T extends LogDefinition ? T['level'] : T
-  >;
-
-  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
-    ? GetLogType<T[number]>
-    : never;
+  export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
+  export type GetEvents<T extends any> = T extends Array<LogLevel | LogDefinition> ?
+    GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]>
+    : never
 
   export type QueryEvent = {
     timestamp: Date
@@ -1548,14 +1535,12 @@ export namespace Prisma {
     id: number | null
     quantity: number | null
     unitPrice: number | null
-    buyingPrice: number | null
   }
 
   export type ProductSumAggregateOutputType = {
     id: number | null
     quantity: number | null
     unitPrice: number | null
-    buyingPrice: number | null
   }
 
   export type ProductMinAggregateOutputType = {
@@ -1564,7 +1549,6 @@ export namespace Prisma {
     category: string | null
     quantity: number | null
     unitPrice: number | null
-    buyingPrice: number | null
     status: $Enums.ProductStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1576,7 +1560,6 @@ export namespace Prisma {
     category: string | null
     quantity: number | null
     unitPrice: number | null
-    buyingPrice: number | null
     status: $Enums.ProductStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1588,7 +1571,6 @@ export namespace Prisma {
     category: number
     quantity: number
     unitPrice: number
-    buyingPrice: number
     status: number
     createdAt: number
     updatedAt: number
@@ -1600,14 +1582,12 @@ export namespace Prisma {
     id?: true
     quantity?: true
     unitPrice?: true
-    buyingPrice?: true
   }
 
   export type ProductSumAggregateInputType = {
     id?: true
     quantity?: true
     unitPrice?: true
-    buyingPrice?: true
   }
 
   export type ProductMinAggregateInputType = {
@@ -1616,7 +1596,6 @@ export namespace Prisma {
     category?: true
     quantity?: true
     unitPrice?: true
-    buyingPrice?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -1628,7 +1607,6 @@ export namespace Prisma {
     category?: true
     quantity?: true
     unitPrice?: true
-    buyingPrice?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -1640,7 +1618,6 @@ export namespace Prisma {
     category?: true
     quantity?: true
     unitPrice?: true
-    buyingPrice?: true
     status?: true
     createdAt?: true
     updatedAt?: true
@@ -1739,7 +1716,6 @@ export namespace Prisma {
     category: string
     quantity: number
     unitPrice: number
-    buyingPrice: number | null
     status: $Enums.ProductStatus
     createdAt: Date
     updatedAt: Date
@@ -1770,7 +1746,6 @@ export namespace Prisma {
     category?: boolean
     quantity?: boolean
     unitPrice?: boolean
-    buyingPrice?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1784,7 +1759,6 @@ export namespace Prisma {
     category?: boolean
     quantity?: boolean
     unitPrice?: boolean
-    buyingPrice?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1796,7 +1770,6 @@ export namespace Prisma {
     category?: boolean
     quantity?: boolean
     unitPrice?: boolean
-    buyingPrice?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1808,13 +1781,12 @@ export namespace Prisma {
     category?: boolean
     quantity?: boolean
     unitPrice?: boolean
-    buyingPrice?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "quantity" | "unitPrice" | "buyingPrice" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "quantity" | "unitPrice" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     transactions?: boolean | Product$transactionsArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
@@ -1833,7 +1805,6 @@ export namespace Prisma {
       category: string
       quantity: number
       unitPrice: number
-      buyingPrice: number | null
       status: $Enums.ProductStatus
       createdAt: Date
       updatedAt: Date
@@ -2266,7 +2237,6 @@ export namespace Prisma {
     readonly category: FieldRef<"Product", 'String'>
     readonly quantity: FieldRef<"Product", 'Int'>
     readonly unitPrice: FieldRef<"Product", 'Float'>
-    readonly buyingPrice: FieldRef<"Product", 'Float'>
     readonly status: FieldRef<"Product", 'ProductStatus'>
     readonly createdAt: FieldRef<"Product", 'DateTime'>
     readonly updatedAt: FieldRef<"Product", 'DateTime'>
@@ -2499,7 +2469,6 @@ export namespace Prisma {
      * The data used to create many Products.
      */
     data: ProductCreateManyInput | ProductCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -2518,7 +2487,6 @@ export namespace Prisma {
      * The data used to create many Products.
      */
     data: ProductCreateManyInput | ProductCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -3577,7 +3545,6 @@ export namespace Prisma {
      * The data used to create many Locations.
      */
     data: LocationCreateManyInput | LocationCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -3596,7 +3563,6 @@ export namespace Prisma {
      * The data used to create many Locations.
      */
     data: LocationCreateManyInput | LocationCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -4715,7 +4681,6 @@ export namespace Prisma {
      * The data used to create many Assets.
      */
     data: AssetCreateManyInput | AssetCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -4734,7 +4699,6 @@ export namespace Prisma {
      * The data used to create many Assets.
      */
     data: AssetCreateManyInput | AssetCreateManyInput[]
-    skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -5851,7 +5815,6 @@ export namespace Prisma {
      * The data used to create many Transactions.
      */
     data: TransactionCreateManyInput | TransactionCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -5870,7 +5833,6 @@ export namespace Prisma {
      * The data used to create many Transactions.
      */
     data: TransactionCreateManyInput | TransactionCreateManyInput[]
-    skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
@@ -6951,7 +6913,6 @@ export namespace Prisma {
      * The data used to create many InventoryItems.
      */
     data: InventoryItemCreateManyInput | InventoryItemCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -6970,7 +6931,6 @@ export namespace Prisma {
      * The data used to create many InventoryItems.
      */
     data: InventoryItemCreateManyInput | InventoryItemCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -8014,7 +7974,6 @@ export namespace Prisma {
      * The data used to create many Sales.
      */
     data: SaleCreateManyInput | SaleCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -8033,7 +7992,6 @@ export namespace Prisma {
      * The data used to create many Sales.
      */
     data: SaleCreateManyInput | SaleCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -9090,7 +9048,6 @@ export namespace Prisma {
      * The data used to create many Expenses.
      */
     data: ExpenseCreateManyInput | ExpenseCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -9109,7 +9066,6 @@ export namespace Prisma {
      * The data used to create many Expenses.
      */
     data: ExpenseCreateManyInput | ExpenseCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -9256,9 +9212,6 @@ export namespace Prisma {
    */
 
   export const TransactionIsolationLevel: {
-    ReadUncommitted: 'ReadUncommitted',
-    ReadCommitted: 'ReadCommitted',
-    RepeatableRead: 'RepeatableRead',
     Serializable: 'Serializable'
   };
 
@@ -9271,7 +9224,6 @@ export namespace Prisma {
     category: 'category',
     quantity: 'quantity',
     unitPrice: 'unitPrice',
-    buyingPrice: 'buyingPrice',
     status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -9363,14 +9315,6 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-  export const QueryMode: {
-    default: 'default',
-    insensitive: 'insensitive'
-  };
-
-  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
-
-
   export const NullsOrder: {
     first: 'first',
     last: 'last'
@@ -9392,23 +9336,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int[]'
-   */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-  /**
    * Reference to a field of type 'String'
    */
   export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
-    
-
-
-  /**
-   * Reference to a field of type 'String[]'
-   */
-  export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
     
 
 
@@ -9420,23 +9350,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
    * Reference to a field of type 'ProductStatus'
    */
   export type EnumProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'ProductStatus[]'
-   */
-  export type ListEnumProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductStatus[]'>
     
 
 
@@ -9448,13 +9364,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'DateTime[]'
-   */
-  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-  /**
    * Reference to a field of type 'AssetStatus'
    */
   export type EnumAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AssetStatus'>
@@ -9462,23 +9371,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'AssetStatus[]'
-   */
-  export type ListEnumAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AssetStatus[]'>
-    
-
-
-  /**
    * Reference to a field of type 'TransactionType'
    */
   export type EnumTransactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionType'>
-    
-
-
-  /**
-   * Reference to a field of type 'TransactionType[]'
-   */
-  export type ListEnumTransactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionType[]'>
     
   /**
    * Deep Input Types
@@ -9494,7 +9389,6 @@ export namespace Prisma {
     category?: StringFilter<"Product"> | string
     quantity?: IntFilter<"Product"> | number
     unitPrice?: FloatFilter<"Product"> | number
-    buyingPrice?: FloatNullableFilter<"Product"> | number | null
     status?: EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
@@ -9507,7 +9401,6 @@ export namespace Prisma {
     category?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -9523,7 +9416,6 @@ export namespace Prisma {
     category?: StringFilter<"Product"> | string
     quantity?: IntFilter<"Product"> | number
     unitPrice?: FloatFilter<"Product"> | number
-    buyingPrice?: FloatNullableFilter<"Product"> | number | null
     status?: EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
@@ -9536,7 +9428,6 @@ export namespace Prisma {
     category?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -9556,7 +9447,6 @@ export namespace Prisma {
     category?: StringWithAggregatesFilter<"Product"> | string
     quantity?: IntWithAggregatesFilter<"Product"> | number
     unitPrice?: FloatWithAggregatesFilter<"Product"> | number
-    buyingPrice?: FloatNullableWithAggregatesFilter<"Product"> | number | null
     status?: EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
@@ -9945,7 +9835,6 @@ export namespace Prisma {
     category: string
     quantity?: number
     unitPrice: number
-    buyingPrice?: number | null
     status?: $Enums.ProductStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -9958,7 +9847,6 @@ export namespace Prisma {
     category: string
     quantity?: number
     unitPrice: number
-    buyingPrice?: number | null
     status?: $Enums.ProductStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -9970,7 +9858,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9983,7 +9870,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9996,7 +9882,6 @@ export namespace Prisma {
     category: string
     quantity?: number
     unitPrice: number
-    buyingPrice?: number | null
     status?: $Enums.ProductStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10007,7 +9892,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10019,7 +9903,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10410,8 +10293,8 @@ export namespace Prisma {
 
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -10421,8 +10304,8 @@ export namespace Prisma {
 
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -10430,14 +10313,13 @@ export namespace Prisma {
     contains?: string | StringFieldRefInput<$PrismaModel>
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
   export type FloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | FloatFieldRefInput<$PrismaModel>
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
@@ -10445,28 +10327,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type EnumProductStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[]
+    notIn?: $Enums.ProductStatus[]
     not?: NestedEnumProductStatusFilter<$PrismaModel> | $Enums.ProductStatus
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
     lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -10480,11 +10351,6 @@ export namespace Prisma {
     none?: TransactionWhereInput
   }
 
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
-  }
-
   export type TransactionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -10495,7 +10361,6 @@ export namespace Prisma {
     category?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10505,7 +10370,6 @@ export namespace Prisma {
     id?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrder
   }
 
   export type ProductMaxOrderByAggregateInput = {
@@ -10514,7 +10378,6 @@ export namespace Prisma {
     category?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10526,7 +10389,6 @@ export namespace Prisma {
     category?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10536,13 +10398,12 @@ export namespace Prisma {
     id?: SortOrder
     quantity?: SortOrder
     unitPrice?: SortOrder
-    buyingPrice?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -10557,8 +10418,8 @@ export namespace Prisma {
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -10566,7 +10427,6 @@ export namespace Prisma {
     contains?: string | StringFieldRefInput<$PrismaModel>
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
     not?: NestedStringWithAggregatesFilter<$PrismaModel> | string
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
@@ -10575,8 +10435,8 @@ export namespace Prisma {
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | FloatFieldRefInput<$PrismaModel>
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
@@ -10589,26 +10449,10 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
   export type EnumProductStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[]
+    notIn?: $Enums.ProductStatus[]
     not?: NestedEnumProductStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductStatus
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProductStatusFilter<$PrismaModel>
@@ -10617,8 +10461,8 @@ export namespace Prisma {
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
     lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -10631,8 +10475,8 @@ export namespace Prisma {
 
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -10640,7 +10484,6 @@ export namespace Prisma {
     contains?: string | StringFieldRefInput<$PrismaModel>
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
@@ -10648,6 +10491,11 @@ export namespace Prisma {
     every?: AssetWhereInput
     some?: AssetWhereInput
     none?: AssetWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type AssetOrderByRelationAggregateInput = {
@@ -10682,8 +10530,8 @@ export namespace Prisma {
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -10691,7 +10539,6 @@ export namespace Prisma {
     contains?: string | StringFieldRefInput<$PrismaModel>
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
     not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
@@ -10700,15 +10547,15 @@ export namespace Prisma {
 
   export type EnumAssetStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.AssetStatus | EnumAssetStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AssetStatus[]
+    notIn?: $Enums.AssetStatus[]
     not?: NestedEnumAssetStatusFilter<$PrismaModel> | $Enums.AssetStatus
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -10763,8 +10610,8 @@ export namespace Prisma {
 
   export type EnumAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.AssetStatus | EnumAssetStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AssetStatus[]
+    notIn?: $Enums.AssetStatus[]
     not?: NestedEnumAssetStatusWithAggregatesFilter<$PrismaModel> | $Enums.AssetStatus
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAssetStatusFilter<$PrismaModel>
@@ -10773,8 +10620,8 @@ export namespace Prisma {
 
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -10787,10 +10634,21 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type EnumTransactionTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.TransactionType | EnumTransactionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TransactionType[]
+    notIn?: $Enums.TransactionType[]
     not?: NestedEnumTransactionTypeFilter<$PrismaModel> | $Enums.TransactionType
   }
 
@@ -10840,10 +10698,26 @@ export namespace Prisma {
     chargedPrice?: SortOrder
   }
 
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type EnumTransactionTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TransactionType | EnumTransactionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TransactionType[]
+    notIn?: $Enums.TransactionType[]
     not?: NestedEnumTransactionTypeWithAggregatesFilter<$PrismaModel> | $Enums.TransactionType
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTransactionTypeFilter<$PrismaModel>
@@ -11016,14 +10890,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type EnumProductStatusFieldUpdateOperationsInput = {
     set?: $Enums.ProductStatus
   }
@@ -11140,6 +11006,14 @@ export namespace Prisma {
     connect?: ProductWhereUniqueInput
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type EnumTransactionTypeFieldUpdateOperationsInput = {
     set?: $Enums.TransactionType
   }
@@ -11154,8 +11028,8 @@ export namespace Prisma {
 
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -11165,8 +11039,8 @@ export namespace Prisma {
 
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -11179,8 +11053,8 @@ export namespace Prisma {
 
   export type NestedFloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | FloatFieldRefInput<$PrismaModel>
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
@@ -11188,28 +11062,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedEnumProductStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[]
+    notIn?: $Enums.ProductStatus[]
     not?: NestedEnumProductStatusFilter<$PrismaModel> | $Enums.ProductStatus
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
     lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -11219,8 +11082,8 @@ export namespace Prisma {
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -11235,8 +11098,8 @@ export namespace Prisma {
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -11252,8 +11115,8 @@ export namespace Prisma {
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
     lt?: number | FloatFieldRefInput<$PrismaModel>
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
@@ -11266,37 +11129,10 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedEnumProductStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[]
+    notIn?: $Enums.ProductStatus[]
     not?: NestedEnumProductStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductStatus
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProductStatusFilter<$PrismaModel>
@@ -11305,8 +11141,8 @@ export namespace Prisma {
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
     lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -11319,8 +11155,8 @@ export namespace Prisma {
 
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -11333,8 +11169,8 @@ export namespace Prisma {
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
     lt?: string | StringFieldRefInput<$PrismaModel>
     lte?: string | StringFieldRefInput<$PrismaModel>
     gt?: string | StringFieldRefInput<$PrismaModel>
@@ -11348,17 +11184,28 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedEnumAssetStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.AssetStatus | EnumAssetStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AssetStatus[]
+    notIn?: $Enums.AssetStatus[]
     not?: NestedEnumAssetStatusFilter<$PrismaModel> | $Enums.AssetStatus
   }
 
   export type NestedEnumAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.AssetStatus | EnumAssetStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AssetStatus[] | ListEnumAssetStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AssetStatus[]
+    notIn?: $Enums.AssetStatus[]
     not?: NestedEnumAssetStatusWithAggregatesFilter<$PrismaModel> | $Enums.AssetStatus
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAssetStatusFilter<$PrismaModel>
@@ -11367,8 +11214,8 @@ export namespace Prisma {
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
@@ -11381,17 +11228,44 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedEnumTransactionTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.TransactionType | EnumTransactionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TransactionType[]
+    notIn?: $Enums.TransactionType[]
     not?: NestedEnumTransactionTypeFilter<$PrismaModel> | $Enums.TransactionType
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumTransactionTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TransactionType | EnumTransactionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.TransactionType[] | ListEnumTransactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TransactionType[]
+    notIn?: $Enums.TransactionType[]
     not?: NestedEnumTransactionTypeWithAggregatesFilter<$PrismaModel> | $Enums.TransactionType
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTransactionTypeFilter<$PrismaModel>
@@ -11420,7 +11294,6 @@ export namespace Prisma {
 
   export type TransactionCreateManyProductInputEnvelope = {
     data: TransactionCreateManyProductInput | TransactionCreateManyProductInput[]
-    skipDuplicates?: boolean
   }
 
   export type TransactionUpsertWithWhereUniqueWithoutProductInput = {
@@ -11475,7 +11348,6 @@ export namespace Prisma {
 
   export type AssetCreateManyLocationInputEnvelope = {
     data: AssetCreateManyLocationInput | AssetCreateManyLocationInput[]
-    skipDuplicates?: boolean
   }
 
   export type AssetUpsertWithWhereUniqueWithoutLocationInput = {
@@ -11550,7 +11422,6 @@ export namespace Prisma {
     category: string
     quantity?: number
     unitPrice: number
-    buyingPrice?: number | null
     status?: $Enums.ProductStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11562,7 +11433,6 @@ export namespace Prisma {
     category: string
     quantity?: number
     unitPrice: number
-    buyingPrice?: number | null
     status?: $Enums.ProductStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11589,7 +11459,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11601,7 +11470,6 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     quantity?: IntFieldUpdateOperationsInput | number
     unitPrice?: FloatFieldUpdateOperationsInput | number
-    buyingPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

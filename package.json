@@ -1,15 +1,16 @@
 {
-  "name": "inv",
-  "version": "1.0.0",
-  "description": "",
-  "private": true,
+  "name": "electgo",
+  "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter electgo dev",
     "build": "pnpm --filter electgo build",
     "start": "pnpm --filter electgo start"
   },
   "dependencies": {
-    "next": "15.4.4"
+    "@types/pdf": "^0.0.31",
+    "next": "15.4.4",
+    "pdfkit": "^0.17.2"
   },
   "keywords": [],
   "author": "",

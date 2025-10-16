@@ -1,19 +1,8 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "../../generated/prisma"; // Correct path
-
-const prisma = new PrismaClient().$extends({
-  query: {
-    transaction: {
-      async create({ args, query }) {
-        // Validate before creation
-        if (args.data.quantity <= 0) {
-          throw new Error("Quantity must be positive");
-        }
-        return query(args);
-      }
-    }
-  }
-});
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { canCreateSale, canDeleteSale, canManageSales, canViewSales } from "../lib/roleUtils";
 
 interface Sale {
   id: number;
@@ -21,23 +10,52 @@ interface Sale {
   price: number; // Required number type
   quantity: number;
   date: string;
+  buyingPrice?: number;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !canViewSales(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const sales = await prisma.transaction.findMany({
       where: { type: 'SALE' },
-      include: { product: true }
+      select: {
+        id: true,
+        quantity: true,
+        timestamp: true,
+        chargedPrice: true,
+        product: {
+          select: {
+            name: true,
+            unitPrice: true,
+            buyingPrice: true,
+          }
+        }
+      }
     });
 
     // Validate and transform data
-    const validatedSales = sales.map(sale => ({
-      id: sale.id,
-      item: sale.product?.name || "Unknown Item", // Fallback
-      price: sale.chargedPrice || sale.product?.unitPrice || 0, // Use charged price if available, fallback to unit price
-      quantity: sale.quantity,
-      date: sale.timestamp.toISOString().split('T')[0]
-    }));
+    const validatedSales: Sale[] = sales.map(sale => {
+      const productName = sale.product?.name || "Unknown Item";
+      const price = (sale.chargedPrice ?? null) != null
+        ? Number(sale.chargedPrice)
+        : (sale.product?.unitPrice ?? 0);
+      const timestamp = sale.timestamp instanceof Date ? sale.timestamp : (sale as any).timestamp ? new Date((sale as any).timestamp) : null;
+      const dateStr = timestamp && !isNaN(timestamp.getTime())
+        ? timestamp.toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+      const buyingPrice = Number(sale.product?.buyingPrice ?? 0);
+      return ({
+        id: sale.id,
+        item: productName,
+        price: price,
+        quantity: sale.quantity,
+        date: dateStr,
+        buyingPrice,
+      });
+    });
 
     return NextResponse.json(validatedSales);
   } catch (error) {
@@ -46,14 +64,23 @@ export async function GET() {
       { error: "Database operation failed" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !canCreateSale(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
-    const { item, price, quantity, date } = await request.json();
+    const { item, price, quantity, date, runningCost } = await request.json();
+
+    if (!item || price === undefined || quantity === undefined || !date) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
     // Define service items that should not affect inventory
     const serviceItems = [
@@ -75,7 +102,9 @@ export async function POST(request: Request) {
       "Passport Application",
       "Passport Photo",
       "KRA PIN retrieval",
-      "Business Registration"
+      "Business Registration",
+      "sim replacement/registration",
+      "Other Service"
     ];
 
     const isService = serviceItems.includes(item);
@@ -93,16 +122,16 @@ export async function POST(request: Request) {
             name: item,
             category: 'Service',
             quantity: 0, // Services don't have physical inventory
-            unitPrice: price,
+            unitPrice: parseFloat(price),
             status: 'IN_STOCK'
           }
         });
       } else {
         // Update service price if different
-        if (serviceProduct.unitPrice !== price) {
+        if (serviceProduct.unitPrice !== parseFloat(price)) {
           serviceProduct = await prisma.product.update({
             where: { id: serviceProduct.id },
-            data: { unitPrice: price }
+            data: { unitPrice: parseFloat(price) }
           });
         }
       }
@@ -111,8 +140,8 @@ export async function POST(request: Request) {
       const sale = await prisma.transaction.create({
         data: {
           productId: serviceProduct.id,
-          quantity: quantity,
-          chargedPrice: price, // Store the actual charged price
+          quantity: parseInt(quantity),
+          chargedPrice: parseFloat(price), // Store the actual charged price
           type: 'SALE',
           timestamp: new Date(date)
         },
@@ -125,9 +154,11 @@ export async function POST(request: Request) {
       const transformedSale = {
         id: sale.id,
         item: sale.product.name,
-        price: price, // Use the actual charged price (includes discount)
+        price: parseFloat(price), // Use the actual charged price (includes discount)
         quantity: sale.quantity,
-        date: sale.timestamp.toISOString().split('T')[0]
+        date: sale.timestamp.toISOString().split('T')[0],
+        // Echo runningCost back (not persisted) to enable UI/report profit calculations
+        runningCost: typeof runningCost === 'number' ? runningCost : (runningCost ? Number(runningCost) : 0),
       };
 
       // Calculate updated revenue after adding sale
@@ -178,7 +209,7 @@ export async function POST(request: Request) {
       }
 
       // Check if enough inventory is available
-      if (product.quantity < quantity) {
+      if (product.quantity < parseInt(quantity)) {
         return NextResponse.json(
           { error: `Insufficient inventory. Available: ${product.quantity}, Requested: ${quantity}` },
           { status: 400 }
@@ -189,8 +220,8 @@ export async function POST(request: Request) {
       const updatedProduct = await prisma.product.update({
         where: { id: product.id },
         data: { 
-          quantity: product.quantity - quantity,
-          status: (product.quantity - quantity) <= 0 ? 'OUT_OF_STOCK' : 'IN_STOCK'
+          quantity: product.quantity - parseInt(quantity),
+          status: (product.quantity - parseInt(quantity)) <= 0 ? 'OUT_OF_STOCK' : 'IN_STOCK'
         }
       });
 
@@ -198,8 +229,8 @@ export async function POST(request: Request) {
       const sale = await prisma.transaction.create({
         data: {
           productId: product.id,
-          quantity: quantity,
-          chargedPrice: price, // Store the actual charged price
+          quantity: parseInt(quantity),
+          chargedPrice: parseFloat(price), // Store the actual charged price
           type: 'SALE',
           timestamp: new Date(date)
         },
@@ -212,7 +243,7 @@ export async function POST(request: Request) {
       const transformedSale = {
         id: sale.id,
         item: sale.product.name,
-        price: price, // Use the actual charged price (includes discount)
+        price: parseFloat(price), // Use the actual charged price (includes discount)
         quantity: sale.quantity,
         date: sale.timestamp.toISOString().split('T')[0]
       };
@@ -261,9 +292,20 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !canManageSales(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { id, item, price, quantity, date } = await request.json();
+
+    if (!id || !item || price === undefined || quantity === undefined || !date) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
     // Find the transaction
     const transaction = await prisma.transaction.findUnique({
@@ -290,7 +332,7 @@ export async function PUT(request: Request) {
             name: item,
             category: 'Service',
             quantity: 0,
-            unitPrice: price,
+            unitPrice: parseFloat(price),
             status: 'IN_STOCK'
           }
         });
@@ -301,8 +343,8 @@ export async function PUT(request: Request) {
         where: { id: parseInt(id) },
         data: {
           productId: product.id,
-          quantity: quantity,
-          chargedPrice: price, // Store the actual charged price
+          quantity: parseInt(quantity),
+          chargedPrice: parseFloat(price), // Store the actual charged price
           timestamp: new Date(date)
         }
       });
@@ -311,17 +353,17 @@ export async function PUT(request: Request) {
       await prisma.transaction.update({
         where: { id: parseInt(id) },
         data: {
-          quantity: quantity,
-          chargedPrice: price, // Store the actual charged price
+          quantity: parseInt(quantity),
+          chargedPrice: parseFloat(price), // Store the actual charged price
           timestamp: new Date(date)
         }
       });
 
       // Update the product price if it changed (for reference)
-      if (transaction.product.unitPrice !== price) {
+      if (transaction.product.unitPrice !== parseFloat(price)) {
         await prisma.product.update({
           where: { id: transaction.productId },
-          data: { unitPrice: price }
+          data: { unitPrice: parseFloat(price) }
         });
       }
     }
@@ -336,4 +378,51 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE method removed - handled by [id]/route.ts 
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !canDeleteSale(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    const { id } = await request.json();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing sale ID" },
+        { status: 400 }
+      );
+    }
+    
+    // First check if record exists and is invalid
+    const sale = await prisma.transaction.findUnique({
+      where: { id: parseInt(id) },
+      include: { product: true }
+    });
+
+    if (!sale) {
+      return NextResponse.json(
+        { error: "Sale not found" },
+        { status: 404 }
+      );
+    }
+
+    // Auto-delete if invalid
+    if (sale.quantity <= 0 || !sale.product) {
+      await prisma.transaction.delete({ where: { id: parseInt(id) } });
+      return NextResponse.json({ 
+        message: "Invalid sale auto-deleted" 
+      });
+    }
+
+    // Normal deletion for valid records
+    await prisma.transaction.delete({ where: { id: parseInt(id) } });
+    return NextResponse.json({ message: "Sale deleted successfully" });
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    return NextResponse.json(
+      { error: "Deletion failed" },
+      { status: 500 }
+    );
+  }
+} 

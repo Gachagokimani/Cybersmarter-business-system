@@ -1,13 +1,26 @@
 "use client";
 import Link from "next/link";
+import { FaDesktop } from 'react-icons/fa';
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import { FaHome, FaBoxOpen, FaReceipt, FaChartBar, FaExclamationTriangle, FaChevronDown, FaDollarSign } from "react-icons/fa";
 
 export default function Navbar() {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const [stockDropdownOpen, setStockDropdownOpen] = useState(false);
+
+  // Determine dashboard URL based on user role
+  const getDashboardUrl = () => {
+    if (!session?.user?.role) return '/auth/login';
+    return session.user.role === 'ADMIN' 
+      ? '/admin/dashboard' 
+      : session.user.role === 'MANAGER' 
+        ? '/supervisor/dashboard' 
+        : '/staff/dashboard'; // Staff members go to staff dashboard
+  };
 
   const navItems = [
     {
@@ -67,16 +80,49 @@ export default function Navbar() {
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
               <Image
                 src="/cybersmater.png"
-                alt="CyberSmater Logo"
+                alt="CyberSmater Logo (check /public/cybersmater.png exists)"
                 width={40}
                 height={40}
-                className="mr-3"
+                className="mr-3 bg-white"
+                onError={(e) => {
+                  // fallback to text if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                  const sibling = target.nextElementSibling;
+                  if (sibling) sibling.textContent = "CyberSmater";
+                }}
               />
               <span className="text-lg font-bold text-white hidden sm:block">
                 CyberSmater
               </span>
             </Link>
           </div>
+          {/* Dashboard Button by Role */}
+          {session?.user?.role && (
+            <Link
+              href={getDashboardUrl()}
+              className={`
+                flex items-center px-1 py-2 rounded-md text-sm font-semibold transition-all duration-200
+                ${
+                  pathname === getDashboardUrl()
+                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md'
+                    : 'text-slate-200 hover:bg-gradient-to-r hover:from-purple-600 hover:to-purple-700 hover:text-white'
+                }
+              `}
+              title={
+                session.user.role === "ADMIN" ? "Admin Dashboard" :
+                session.user.role === "MANAGER" ? "Supervisor Dashboard" :
+                "Staff Dashboard"
+              }
+              style={{ marginRight: 16 }}
+            >
+              <FaDesktop className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">
+                {session.user.role === "ADMIN" ? "Admin" : 
+                 session.user.role === "MANAGER" ? "Supervisor" : "Staff"}
+              </span>
+            </Link>
+          )}
           
           {/* Navigation Items */}
           <div className="flex items-center">
@@ -146,6 +192,21 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Auth actions */}
+            {session?.user ? (
+              <button
+                onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                className="ml-3 text-slate-200 hover:text-white hover:underline"
+                title="Sign out"
+              >
+                Sign out
+              </button>
+            ) : (
+              <Link href="/auth/login" className="ml-3 text-slate-200 hover:text-white hover:underline" title="Sign in">
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -159,4 +220,4 @@ export default function Navbar() {
       )}
     </nav>
   );
-} 
+}

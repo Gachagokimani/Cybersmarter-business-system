@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '../../../generated/prisma';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../../lib/prisma';
 
 export async function DELETE(
   request: Request,
@@ -51,7 +49,5 @@ export async function DELETE(
       { error: "Failed to delete sale" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

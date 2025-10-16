@@ -7,7 +7,19 @@ const nextConfig = {
       'bufferutil': 'commonjs bufferutil',
     })
     return config
-  }
+  },
+  // Turbopack configuration (now stable)
+  turbopack: {
+    rules: {
+      // Use glob patterns instead of file extensions
+      '*.svg': ['@svgr/webpack'],
+      '*.md': ['raw-loader'],
+    },
+  },
+  // Experimental features
+  experimental: {
+    esmExternals: true, // To handle ES modules
+  },
 };
 
 module.exports = nextConfig; 

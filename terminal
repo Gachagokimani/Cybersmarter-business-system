@@ -1,0 +1,454 @@
+import { PrismaClient } from '../../generated/prisma/client'
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+After running `pnpm prisma generate`, here are the next steps you should take:
+
+### 1. Run Database Migrations
+Apply your Prisma schema to the database:
+```bash:terminal
+pnpm prisma migrate dev --name init
+```
+This will:
+1. Create the SQLite database file (`dev.db`) if it doesn't exist
+2. Generate and apply the initial migration
+3. Seed the database if you have a seed script
+
+### 2. Verify the Generated Client
+Check that the Prisma client was generated correctly:
+```bash:terminal
+ls electgo/app/generated/prisma/client
+```
+You should see files like:
+- `index.js`
+- `index.d.ts`
+- `package.json`
+
+### 3. Test Your Database Connection
+Use the test route you created:
+1. Start your development server:
+```bash:terminal
+pnpm dev
+```
+
+2. Visit `http://localhost:3000/api/test-db` in your browser
+3. You should see a successful response:
+```json
+{"success":true,"testQuery":[{"result":2}]}
+```
+
+### 4. Seed Your Database (Optional)
+If you have a seed script, run it:
+```bash:terminal
+pnpm prisma db seed
+```
+
+### 5. Start Developing
+You can now use Prisma in your application components:
+```typescript:electgo/app/inventory/page.tsx
+import { prisma } from '@/lib/prisma';
+
+export default async function InventoryPage() {
+  const items = await prisma.inventoryItem.findMany();
+  
+  return (
+    <div>
+      {items.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+### For Production Deployment:
+1. Set your PostgreSQL connection string in Vercel environment variables
+2. Update your build script to include migrations:
+```json:electgo/package.json
+"build": "prisma generate && prisma migrate deploy && next build"
+```
+
+3. Deploy to Vercel:
+```bash:terminal
+vercel deploy --prod
+```
+
+### Troubleshooting Tips:
+If you encounter issues:
+1. Check the Prisma migration status:
+```bash:terminal
+pnpm prisma migrate status
+```
+
+2. Inspect the database directly:
+```bash:terminal
+pnpm prisma studio
+```
+
+3. Verify environment variables:
+```bash:terminal
+echo $DATABASE_URL
+```
+
+These steps will ensure your database is properly set up and connected for both development and production environments. The key is to run migrations after generating the client to synchronize your database schema with your Prisma models.
+
+The error occurs because your Prisma client doesn't have a `user` model defined in your schema. Here's how to fix it:
+
+### 1. Add User Model to Your Schema
+Update your Prisma schema to include a User model:
+
+```prisma:electgo/prisma/schema.prisma
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+}
+```
+
+### 2. Regenerate Prisma Client
+After updating the schema, regenerate the client:
+```bash:terminal
+cd electgo
+pnpm prisma generate
+```
+
+### 3. Run Migrations
+Apply the schema changes to your database:
+```bash:terminal
+pnpm prisma migrate dev --name add_user_model
+```
+
+### 4. Update Your Seed Script
+Now your seed script will work with the `user` property:
+
+```typescript:electgo/prisma/seed.ts
+import { PrismaClient } from '../app/generated/prisma'
+const prisma = new PrismaClient()
+
+async function main() {
+  // Create a user
+  await prisma.user.create({
+    data: {
+      email: 'admin@example.com',
+      name: 'Admin User'
+    }
+  });
+  
+  // Add more seed data as needed
+}
+
+main()
+  .catch(e => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
+```
+
+### 5. Run the Seed Command
+Execute your seed script:
+```bash:terminal
+pnpm prisma db seed
+```
+
+### Key Points:
+1. The error occurs because the `user` model wasn't defined in your Prisma schema
+2. Prisma client only includes methods for models defined in your schema
+3. After adding the model, you must:
+   - Regenerate the client (`prisma generate`)
+   - Migrate your database (`prisma migrate dev`)
+   - Restart your development server
+
+This will resolve the "Property 'user' does not exist" error and allow your seed script to work properly.
+
+Here are the essential commands combined into one-liners for quick execution:
+
+### 1. Regenerate Client + Run Migrations + Seed Database
+```bash:terminal
+cd electgo && pnpm prisma generate && pnpm prisma migrate dev --name add_user_model && pnpm prisma db seed
+```
+
+### 2. Full Setup (From Start to Finish)
+```bash:terminal
+cd electgo && pnpm install && pnpm prisma generate && pnpm prisma migrate dev --name init && pnpm prisma db seed && pnpm run dev
+```
+
+### 3. Production Build Command
+```bash:terminal
+cd electgo && pnpm run build
+```
+
+### 4. Test Database Connection
+```bash:terminal
+cd electgo && pnpm dev & sleep 5 && curl http://localhost:3000/api/test-db
+```
+
+### Key One-Liners Explained:
+1. **Regenerate & Migrate & Seed**:
+   - `pnpm prisma generate`: Updates client with new schema
+   - `pnpm prisma migrate dev`: Applies schema changes to DB
+   - `pnpm prisma db seed`: Populates database with initial data
+
+2. **Full Setup**:
+   - Installs dependencies
+   - Generates client
+   - Creates DB and applies schema
+   - Seeds database
+   - Starts development server
+
+3. **Production Build**:
+   - Generates client
+   - Applies production migrations
+   - Builds Next.js app
+
+4. **Connection Test**:
+   - Starts dev server
+   - Waits 5 seconds for startup
+   - Tests API endpoint
+
+After running the first command, your seed script should work without errors. The User model will be available in your Prisma client, and your database will be populated with the seed data.
+
+Given the context, the user is likely ready to start the development server.
+
+Here are the next steps in command form:
+
+### 1. Start your development server:
+```bash:terminal
+pnpm dev
+```
+
+### 2. Test your database connection:
+```bash:terminal
+curl http://localhost:3000/api/test-db
+```
+
+### 3. Seed your database (if not already done):
+```bash:terminal
+pnpm prisma db seed
+```
+
+### 4. Explore your database with Prisma Studio:
+```bash:terminal
+pnpm prisma studio
+```
+
+### 5. Verify your application routes:
+- Open `http://localhost:3000` in your browser
+- Test your application pages:
+  ```bash:terminal
+  curl http://localhost:3000/inventory
+  curl http://localhost:3000/sales
+  curl http://localhost:3000/expenses
+  ```
+
+### 6. For production deployment:
+```bash:terminal
+vercel deploy --prod
+```
+
+### Key commands summary:
+```bash:terminal
+# Start development
+pnpm dev
+
+# Test API endpoints
+curl http://localhost:3000/api/test-db
+
+# Database management
+pnpm prisma studio  # GUI database explorer
+pnpm prisma db seed # Seed database
+
+# Production deployment
+vercel deploy --prod
+```
+
+After running `pnpm dev`, your application should be accessible at `http://localhost:3000`. The test endpoint at `http://localhost:3000/api/test-db` will confirm your database connection is working properly.
+
+To fix the provider mismatch without losing your work or data, follow these steps:
+
+### 1. Reset Migration History Only
+```bash:terminal
+cd electgo
+rm -rf prisma/migrations
+```
+
+### 2. Create New Migration
+```bash:terminal
+pnpm prisma migrate dev --name init --create-only
+```
+
+### 3. Manually Update Migration Lock
+Edit the new migration file to match your SQLite provider:
+
+```bash:terminal
+# Open the newly created migration file
+# (replace TIMESTAMP with your actual migration timestamp)
+code prisma/migrations/TIMESTAMP_init/migration.sql
+```
+
+Add this line at the top:
+```sql
+-- provider: sqlite
+```
+
+### 4. Apply Migration
+```bash:terminal
+pnpm prisma migrate dev
+```
+
+### 5. Verify and Continue
+```bash:terminal
+pnpm prisma generate
+pnpm prisma db seed
+pnpm dev
+```
+
+### Why this works:
+1. `--create-only` creates migration files without applying them
+2. Manually adding `-- provider: sqlite` satisfies Prisma's lock check
+3. The existing SQLite database (`dev.db`) remains untouched
+4. Your data stays intact while fixing the migration history
+
+### Alternative One-Liner:
+```bash:terminal
+cd electgo && rm -rf prisma/migrations && pnpm prisma migrate dev --name init --create-only && sed -i "1i -- provider: sqlite" prisma/migrations/*/migration.sql && pnpm prisma migrate dev && pnpm prisma generate && pnpm prisma db seed
+```
+
+This approach preserves your database while fixing the provider mismatch in the migration system. Your existing data in `dev.db` will remain safe and accessible.
+
+Here's a concise solution aligned with your setup:
+
+### 1. Update Prisma Client Import Path
+```typescript:electgo/prisma/seed.ts
+import { PrismaClient } from '../app/generated/prisma' // Correct path
+```
+
+### 2. Force Regenerate Prisma Client
+```bash:terminal
+cd electgo
+rm -rf app/generated/prisma
+pnpm prisma generate --force
+```
+
+### 3. Apply Migrations
+```bash:terminal
+pnpm prisma migrate dev --name init
+```
+
+### 4. Run Seed Command
+```bash:terminal
+pnpm prisma db seed
+```
+
+### Key Fixes:
+1. **Path Correction**: Use `'../app/generated/prisma'` without `/client`
+2. **Clean Regeneration**: `rm -rf` + `--force` ensures fresh client build
+3. **Migration Sync**: Applies schema changes to database
+4. **Seed Execution**: Populates database after schema update
+
+### One-Liner Solution:
+```bash:terminal
+cd electgo && rm -rf app/generated/prisma && pnpm prisma generate --force && pnpm prisma migrate dev --name init && pnpm prisma db seed
+```
+
+After running these commands:
+1. The Prisma client will be properly regenerated with your User model
+2. Your database schema will be updated
+3. The seed data will be inserted
+4. The "Property 'user' does not exist" error will be resolved
+
+No changes to your existing schema or seed logic are needed - this purely addresses the client generation and path configuration.
+
+To create a proper, error-free user model and seed it correctly, follow these steps:
+
+### 1. Update Prisma Schema
+Ensure your User model has all required fields:
+
+```prisma:electgo/prisma/schema.prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+### 2. Fix Seed Script
+Use `upsert` to prevent duplicate errors:
+
+```typescript:electgo/prisma/seed.ts
+import { PrismaClient } from '../app/generated/prisma'
+
+const prisma = new PrismaClient()
+
+async function main() {
+  // Create or update admin user
+  await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      name: 'Admin User'
+    }
+  });
+  
+  console.log('✅ User created successfully');
+}
+
+main()
+  .catch(e => {
+    console.error('❌ Seed error:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
+```
+
+### 3. Regenerate Prisma Client
+Run these commands:
+
+```bash:terminal
+cd electgo
+rm -rf app/generated/prisma
+pnpm prisma generate --force
+```
+
+### 4. Apply Migrations
+```bash:terminal
+pnpm prisma migrate dev --name add_user_model
+```
+
+### 5. Seed Database
+```bash:terminal
+pnpm prisma db seed
+```
+
+### 6. Verify User Creation
+```bash:terminal
+pnpm prisma studio
+```
+- Open `http://localhost:5555`
+- Check the User table
+
+### Key Improvements:
+1. **Upsert Operation**: Prevents duplicate email errors
+2. **Proper Timestamps**: `createdAt` and `updatedAt` for better tracking
+3. **Clear Logging**: Success/error messages in seed script
+4. **Studio Verification**: Visual confirmation of user creation
+
+### One-Liner Solution:
+```bash:terminal
+cd electgo && rm -rf app/generated/prisma && pnpm prisma generate --force && pnpm prisma migrate dev --name add_user_model && pnpm prisma db seed
+```
+
+This will create a properly structured user record in your database without errors. The `upsert` operation ensures the seed script can be run multiple times without failing on duplicate emails.

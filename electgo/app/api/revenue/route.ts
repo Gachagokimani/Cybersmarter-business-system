@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '../../generated/prisma';
+import { prisma } from '../../lib/prisma';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
-const prisma = new PrismaClient();
-
-// GET - Calculate net revenue (total sales - total expenses)
 export async function GET() {
-  try {
+    try {
     // Get total sales revenue
     const sales = await prisma.transaction.findMany({
       where: { type: 'SALE' },
@@ -18,7 +17,7 @@ export async function GET() {
             unitPrice: true
           }
         }
-      }
+      } 
     });
 
     const totalSalesRevenue = sales.reduce((sum, sale) => {

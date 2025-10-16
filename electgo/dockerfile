@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache openssl sqlite-libs
+
+WORKDIR /app
+
+COPY package.json *.lock .
+
+COPY prisma/schema.prisma ./prisma/schema.prisma
+
+RUN pnpm prisma generate
+
+RUN pnpm install --production --frozen-lockfile
+
+COPY . .
+
+EXPOSE 3000   
+
+CMD ["pnpm", "dev"]

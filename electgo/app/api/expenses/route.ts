@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '../../generated/prisma';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../lib/prisma';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { canCreateExpense, canDeleteExpense, canManageExpenses, canViewExpenses } from "../lib/roleUtils";
 
 // GET - Fetch all expenses
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !session.user.role || !canViewExpenses(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const expenses = await prisma.expense.findMany({
       orderBy: {
@@ -24,11 +29,15 @@ export async function GET() {
 
 // POST - Create new expense
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !session.user.role || !canCreateExpense(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { item, amount, quantity, date, category } = body;
 
-    if (!item || !amount || !date || !category) {
+    if (!item || amount === undefined || !date || !category) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -90,11 +99,15 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update expense
 export async function PUT(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !session.user.role || !canManageExpenses(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { id, item, amount, quantity, date, category } = body;
 
-    if (!id || !item || !amount || !date || !category) {
+    if (!id || !item || amount === undefined || !date || !category) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -157,6 +170,10 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete expense
 export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !session.user.role || !canDeleteExpense(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { id } = body;

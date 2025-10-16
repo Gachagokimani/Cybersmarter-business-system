@@ -3,21 +3,118 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"  // Relative to prisma/ directory
 }
 
+enum AlertType {
+  LOW_STOCK
+  MAINTENANCE
+  SECURITY
+  SYSTEM
+  OTHER
+}
+
+// New enum to target alerts to a specific audience/scope
+enum AlertAudience {
+  ALL
+  ADMIN
+  STAFF
+  SUPERVISOR
+  USER
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  type      AlertType
+  // Audience determines intended recipients: ALL, ADMIN, STAFF, SUPERVISOR or USER
+  audience  AlertAudience @default(ALL)
+  message   String
+  read      Boolean  @default(false)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// NextAuth.js Authentication Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(STAFF)
+  isActive      Boolean   @default(false)
+  workId        String?   @unique
+  supervisorId  String?   // For staff, links to supervisor
+  supervisor    User?     @relation("Supervisor", fields: [supervisorId], references: [id])
+  staff         User[]    @relation("Supervisor")
+  approvalToken String?   // For pending approval
+  approvalTokenExpires DateTime? // For token expiration
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  alerts   Alert[]
+  sales    Sale[]
+  inventoryActions InventoryAction[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  SUPERVISOR
+}
+
+// Existing Models
 model Product {
   id          Int           @id @default(autoincrement())
   name        String
   category    String
   quantity    Int           @default(0)
   unitPrice   Float
-  buyingPrice Float?        // Cost price for profit calculation
+  buyingPrice Float         @default(0)  // Cost price for profit calculation
   status      ProductStatus @default(IN_STOCK)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -54,13 +151,15 @@ enum AssetStatus {
 }
 
 model Transaction {
-  id           Int              @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   productId    Int
   product      Product          @relation(fields: [productId], references: [id])
   quantity     Int
   chargedPrice Float?           // Actual price charged (including discounts)
   type         TransactionType
   timestamp    DateTime         @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 enum TransactionType {
@@ -86,6 +185,19 @@ model Sale {
   price    Float
   quantity Int
   date     String
+  userId   String?  // Add userId field to track who made the sale
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryAction {
+  id        String   @id @default(cuid())
+  itemName  String
+  action    String   // e.g., "ADDED", "REMOVED", "UPDATED"
+  quantity  Int?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

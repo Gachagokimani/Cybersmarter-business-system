@@ -1,0 +1,9 @@
+{
+  "buildCommand": "...",
+  "installCommand": "...",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "PRISMA_CLIENT_ENGINE_TYPE": "dataproxy"
+  }
+} 

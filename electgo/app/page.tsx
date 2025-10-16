@@ -4,15 +4,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaBoxOpen, FaDesktop, FaCashRegister, FaReceipt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState({
     inventory: false,
     cybercafe: false,
     sales: false,
-    expenses: false
+    expenses: false,
+    adminDashboard: false
   });
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export default function Home() {
     router.push(path);
   };
 
-  if (!mounted) {
+  if (status === "loading" || !mounted) {
     return (
       <div className="font-sans min-h-screen flex flex-col items-center justify-center p-8 sm:p-20 bg-sea-blue">
         <div className="text-center">
@@ -34,6 +37,8 @@ export default function Home() {
       </div>
     );
   }
+  
+  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
     <div className="font-sans min-h-screen flex flex-col items-center justify-between p-8 sm:p-20 bg-sea-blue pt-24">
@@ -52,9 +57,46 @@ export default function Home() {
         <p className="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl">
           Manage your electronics inventory, cyber cafe operations, sales, and expenses seamlessly from one platform.
         </p>
+        {!session && (
+          <div className="mt-4">
+            <button
+              onClick={() => handleNavigation("/auth/login", "inventory")}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-full transition"
+            >
+              Sign in to continue
+            </button>
+          </div>
+        )}
       </header>
 
       <main className="flex flex-col sm:flex-row gap-8 w-full max-w-6xl justify-center items-stretch flex-wrap">
+        {/* Admin Dashboard Button - Only show for admin users */}
+        {isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            whileHover={{ scale: 1.03 }}
+            className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 flex flex-col items-center min-w-[280px]"
+          >
+            <FaDesktop className="text-5xl text-purple-600 dark:text-purple-400 mb-4" />
+            <h2 className="text-2xl font-semibold mb-2">Admin Dashboard</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
+              Access the admin dashboard for advanced management features.
+            </p>
+            <button
+              onClick={() => handleNavigation("/admin/dashboard", "adminDashboard")}
+              disabled={loading.adminDashboard}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2 rounded-full transition flex items-center justify-center gap-2"
+            >
+              {loading.adminDashboard ? (
+                <span className="inline-block animate-spin">↻</span>
+              ) : (
+                "Go to Dashboard"
+              )}
+            </button>
+          </motion.div>
+        )}
         <AnimatePresence>
           {mounted && (
             <>
@@ -66,23 +108,23 @@ export default function Home() {
                 whileHover={{ scale: 1.03 }}
                 className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 flex flex-col items-center min-w-[280px]"
               >
-          <FaBoxOpen className="text-5xl text-blue-600 dark:text-blue-400 mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Electronics Inventory</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
-            Track, manage, and analyze your electronics stock. Add, edit, and monitor inventory levels with ease.
-          </p>
-          <button
-            onClick={() => handleNavigation("/inventory", "inventory")}
-            disabled={loading.inventory}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-full transition disabled:opacity-75 flex items-center justify-center gap-2"
-          >
-            {loading.inventory ? (
-              <span className="inline-block animate-spin">↻</span>
-            ) : (
-              "Go to Inventory"
-            )}
-          </button>
-        </motion.div>
+            <FaBoxOpen className="text-5xl text-blue-600 dark:text-blue-400 mb-4" />
+            <h2 className="text-2xl font-semibold mb-2">Electronics Inventory</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
+              Track, manage, and analyze your electronics stock. Add, edit, and monitor inventory levels with ease.
+            </p>
+            <button
+              onClick={() => handleNavigation("/inventory", "inventory")}
+              disabled={loading.inventory}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-full transition disabled:opacity-75 flex items-center justify-center gap-2"
+            >
+              {loading.inventory ? (
+                <span className="inline-block animate-spin">↻</span>
+              ) : (
+                "Go to Inventory"
+              )}
+            </button>
+          </motion.div>
 
               {/* Cyber Cafe Management Card */}
               <motion.div

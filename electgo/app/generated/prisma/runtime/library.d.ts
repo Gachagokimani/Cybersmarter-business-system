@@ -1180,10 +1180,6 @@ declare type Error_2 = {
         foreignKey: {};
     };
 } | {
-    kind: 'DatabaseNotReachable';
-    host?: string;
-    port?: number;
-} | {
     kind: 'DatabaseDoesNotExist';
     db?: string;
 } | {
@@ -1192,11 +1188,6 @@ declare type Error_2 = {
 } | {
     kind: 'DatabaseAccessDenied';
     db?: string;
-} | {
-    kind: 'ConnectionClosed';
-} | {
-    kind: 'TlsConnectionError';
-    reason: string;
 } | {
     kind: 'AuthenticationFailed';
     user?: string;
@@ -3087,7 +3078,6 @@ declare type SchemaArg = ReadonlyDeep_2<{
     isNullable: boolean;
     isRequired: boolean;
     inputTypes: InputTypeRef[];
-    requiresOtherFields?: string[];
     deprecation?: Deprecation;
 }>;
 

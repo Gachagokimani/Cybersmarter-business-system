@@ -1,27 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-interface InventoryItem {
-  id: number;
-  name: string;
-  quantity: number;
-  category: string;
-  unitPrice: number;
-  buyingPrice?: number;
-  status: string;
-}
-
-interface NewInventoryItem {
-  name: string;
-  quantity: number;
-  category: string;
-  unitPrice: number;
-  buyingPrice: number;
-  status: string;
-}
-
-interface UpdateInventoryItem extends NewInventoryItem {
-  id: number;
-}
+import { InventoryItem } from '../types/inventory';
 
 // Fetch inventory
 export const useInventory = () => {
@@ -42,7 +20,7 @@ export const useAddInventoryItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newItem: NewInventoryItem): Promise<InventoryItem> => {
+    mutationFn: async (newItem: InventoryItem): Promise<InventoryItem> => {
       const response = await fetch('/api/inventory', {
         method: 'POST',
         headers: {
@@ -69,7 +47,7 @@ export const useUpdateInventoryItem = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (updateData: UpdateInventoryItem): Promise<InventoryItem> => {
+    mutationFn: async (updateData: InventoryItem): Promise<InventoryItem> => {
       const response = await fetch('/api/inventory', {
         method: 'PUT',
         headers: {
