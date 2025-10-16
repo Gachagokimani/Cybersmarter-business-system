@@ -348,8 +348,8 @@ export default function ExpensesPage() {
   }
 
   return (
-    <RequireAuth allowedRoles={["ADMIN","MANAGER","STAFF"]}>
-      <div className="p-8 max-w-4xl mx-auto bg-sea-blue min-h-screen">
+    <RequireAuth {...({ allowedRoles: ["ADMIN","MANAGER","STAFF","SUPERVISOR"] } as any)}>
+        <div className="p-8 max-w-4xl mx-auto bg-sea-blue min-h-screen">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">

@@ -95,8 +95,8 @@ export default function SupervisorDashboard() {
   if (error) return <div className="text-red-600 p-8">{error}</div>;
 
   return (
-    <RequireAuth allowedRoles={["ADMIN","MANAGER"]}>
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <RequireAuth {...({ allowedRoles: ["ADMIN","MANAGER","STAFF","SUPERVISOR"] } as any)}>
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>

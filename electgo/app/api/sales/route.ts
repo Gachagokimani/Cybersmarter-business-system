@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
-import { canCreateSale, canDeleteSale, canManageSales, canViewSales } from "../lib/roleUtils";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/lib/auth';
+import { canCreateSale, canDeleteSale, canManageSales, canViewSales, type UserRole } from "../lib/roleUtils";
 
 interface Sale {
   id: number;
@@ -15,7 +15,8 @@ interface Sale {
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !canViewSales(session.user.role)) {
+  const role = session?.user?.role;
+  if (!session || !session.user || !role || !canViewSales(role as UserRole)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -69,9 +70,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !canCreateSale(session.user.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const role2 = session?.user?.role;
+  if (!session || !session.user || !role2 || !canCreateSale(role2 as UserRole)) {
+     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+   }
   try {
     const { item, price, quantity, date, runningCost } = await request.json();
 
@@ -294,9 +296,10 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !canManageSales(session.user.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const role3 = session?.user?.role;
+  if (!session || !session.user || !role3 || !canManageSales(role3 as UserRole)) {
+     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+   }
   try {
     const { id, item, price, quantity, date } = await request.json();
 
@@ -380,9 +383,10 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !canDeleteSale(session.user.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const role4 = session?.user?.role;
+  if (!session || !session.user || !role4 || !canDeleteSale(role4 as UserRole)) {
+     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+   }
   try {
     const { id } = await request.json();
     
@@ -425,4 +429,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

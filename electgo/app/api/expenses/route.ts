@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from '@/app/lib/auth';
 import { canCreateExpense, canDeleteExpense, canManageExpenses, canViewExpenses } from "../lib/roleUtils";
 
 // GET - Fetch all expenses
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.role || !canViewExpenses(session.user.role)) {
+  if (!session || !session.user || !session.user.role || !canViewExpenses(session.user.role as any)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 // POST - Create new expense
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.role || !canCreateExpense(session.user.role)) {
+  if (!session || !session.user || !session.user.role || !canCreateExpense(session.user.role as any)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update expense
 export async function PUT(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.role || !canManageExpenses(session.user.role)) {
+  if (!session || !session.user || !session.user.role || !canManageExpenses(session.user.role as any)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete expense
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.role || !canDeleteExpense(session.user.role)) {
+  if (!session || !session.user || !session.user.role || !canDeleteExpense(session.user.role as any)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -230,4 +230,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

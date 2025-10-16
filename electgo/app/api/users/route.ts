@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 
 // GET: List all active users for report distribution
@@ -30,4 +30,4 @@ export async function GET() {
     console.error('Error fetching users:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
-} 
+}

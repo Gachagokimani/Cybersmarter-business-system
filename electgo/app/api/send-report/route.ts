@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { prisma } from '@/app/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/lib/auth';
 
 // Define known services: intangible with variable running costs
 const SERVICE_NAMES = new Set<string>([
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Basic counts for legend
-    const serviceCount = rowsWithProfit.filter(r => r.isService).length;
+    const serviceCount = rowsWithProfit.filter((r: any) => r.isService).length;
     const productCount = rowsWithProfit.length - serviceCount;
 
     // IMPROVED: Enhanced styling with system colors and better formatting + service badges
@@ -284,4 +284,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

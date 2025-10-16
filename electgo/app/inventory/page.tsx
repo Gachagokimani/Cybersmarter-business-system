@@ -189,7 +189,7 @@ export default function InventoryPage() {
     debounce((value: string) => {
       fetchSuggestions(value);
     }, 300),
-    [fetchSuggestions]
+    [fetchSuggestions] // Add all dependencies here
   );
 
   // Handle suggestion selection - UPDATED TO POPULATE ALL FIELDS

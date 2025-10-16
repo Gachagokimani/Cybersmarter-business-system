@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../../lib/auth';
+import { authOptions } from '@/app/lib/auth';
 import { prisma } from '../../../../app/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info';
 
@@ -17,11 +18,11 @@ export async function GET(request: Request) {
     }
 
     // Helper function to build alert query conditions
-    function buildAdminAlertWhereClause() {
+    function buildAdminAlertWhereClause(): Prisma.AlertWhereInput {
       return {
         OR: [
-          { audience: 'ALL' },
-          { audience: 'ADMIN' },
+          { audience: { equals: 'ALL' } },
+          { audience: { equals: 'ADMIN' } },
           { userId: null }
         ]
       };
